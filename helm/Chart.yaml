@@ -1,0 +1,7 @@
+apiVersion: v2
+name: montandon-eoapi-stats-helm
+description: "Nightly-cached stats API over the Montandon eoAPI pgSTAC database"
+type: application
+version: 0.1.0-SET-BY-CICD
+sources:
+  - https://github.com/IFRCGo/montandon-eoapi-stats/

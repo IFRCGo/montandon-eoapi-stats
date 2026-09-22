@@ -1,0 +1,24 @@
+image:
+  name: SET-BY-CICD-IMAGE
+  tag: SET-BY-CICD-TAG
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  port: 8000
+
+# Name of an existing Secret (in the same namespace) providing DB_HOST, DB_PORT,
+# DB_USER, DB_PASSWORD, DB_NAME as flat keys — e.g. the montandon-eoapi pgstac secret.
+existingDbSecret: pgstac-secrets-montandon-eoapi
+
+cronSchedule: "0 2 * * *"
+queryStatementTimeout: "10min"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi

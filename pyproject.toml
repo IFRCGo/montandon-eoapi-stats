@@ -1,0 +1,26 @@
+[project]
+name = "montandon-eoapi-stats"
+version = "0.1.0"
+description = "Nightly-cached stats API over the Montandon eoAPI pgSTAC database"
+license = "MIT"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.32,<1",
+    "psycopg[binary]>=3.2,<4",
+    "apscheduler>=3.10,<4",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.13.0",
+    "pre-commit",
+    "pytest>=9.1.1",
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 125
+
+[tool.ruff.lint]
+extend-select = ["I", "E", "F", "W"]
