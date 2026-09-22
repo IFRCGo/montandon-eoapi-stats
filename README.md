@@ -15,7 +15,7 @@ from that cache, so the database is only ever hit once per refresh.
 | `GET /stats` | Total collections, events, hazard items, impact items, response items |
 | `GET /stats/sources` | Per-source item counts and date ranges, aggregated across collections |
 | `GET /stats/events/by-hazard-type` | Event counts grouped by hazard code |
-| `GET /stats/events/by-year` | Event counts grouped by year |
+| `GET /stats/items/by-year` | Item counts by year, broken down by type |
 
 ## Configuration
 

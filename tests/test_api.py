@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from app.cache import Snapshot, _aggregate_sources, _merge_collections, _split_collection
+from app.cache import Snapshot, _aggregate_items_by_year, _aggregate_sources, _merge_collections, _split_collection
 from app.main import app
 
 
@@ -26,7 +26,7 @@ def make_snapshot() -> Snapshot:
             }
         ],
         events_by_hazard_type=[{"hazard_code": "EQ", "event_count": 4051947}],
-        events_by_year=[{"year": 2026, "event_count": 372935}],
+        items_by_year=[{"year": 2026, "events": 372935, "hazards": 0, "impacts": 0, "response": 0}],
         generated_at=datetime.now(UTC),
     )
 
@@ -43,7 +43,7 @@ def test_stats_not_ready_before_first_refresh():
             "/stats",
             "/stats/sources",
             "/stats/events/by-hazard-type",
-            "/stats/events/by-year",
+            "/stats/items/by-year",
         ):
             assert client.get(path).status_code == 503
 
@@ -68,7 +68,9 @@ def test_stats_served_from_cache_once_ready():
         assert sources[0]["earliest"] == "1990-01-01T00:22:33.990000+00:00"
 
         assert client.get("/stats/events/by-hazard-type").json() == [{"hazard_code": "EQ", "event_count": 4051947}]
-        assert client.get("/stats/events/by-year").json() == [{"year": 2026, "event_count": 372935}]
+        assert client.get("/stats/items/by-year").json() == [
+            {"year": 2026, "events": 372935, "hazards": 0, "impacts": 0, "response": 0}
+        ]
 
 
 def test_split_collection_strips_only_known_suffixes():
@@ -160,3 +162,20 @@ def test_aggregate_sources_folds_response_collections_into_their_source():
     assert cems["response"] == 2907
     assert cems["events"] == 100
     assert cems["total_items"] == 3007
+
+
+def test_aggregate_items_by_year_buckets_by_type_and_zero_fills_missing_types():
+    items_by_year = _aggregate_items_by_year(
+        [
+            {"collection": "usgs-events", "year": 2020, "item_count": 100},
+            {"collection": "usgs-hazards", "year": 2020, "item_count": 40},
+            {"collection": "usgs-events", "year": 2024, "item_count": 900},
+            {"collection": "usgs-impacts", "year": 2024, "item_count": 850},
+            {"collection": "something-else", "year": 2024, "item_count": 5},
+        ]
+    )
+
+    assert items_by_year == [
+        {"year": 2020, "events": 100, "hazards": 40, "impacts": 0, "response": 0},
+        {"year": 2024, "events": 900, "hazards": 0, "impacts": 850, "response": 0},
+    ]

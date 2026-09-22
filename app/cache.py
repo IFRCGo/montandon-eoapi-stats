@@ -25,7 +25,7 @@ class Snapshot:
     total_response_items: int
     sources: list[dict]
     events_by_hazard_type: list[dict]
-    events_by_year: list[dict]
+    items_by_year: list[dict]
     generated_at: datetime
 
 
@@ -82,6 +82,19 @@ def _aggregate_sources(collections: list[dict]) -> list[dict]:
     return sorted(sources.values(), key=lambda source: source["source"])
 
 
+def _aggregate_items_by_year(rows: list[dict]) -> list[dict]:
+    by_year: dict[int, dict] = {}
+    for row in rows:
+        if row["year"] is None:
+            continue
+        _, item_type = _split_collection(row["collection"])
+        if not item_type:
+            continue
+        year_row = by_year.setdefault(row["year"], {"year": row["year"], **{t: 0 for t in ITEM_TYPES}})
+        year_row[item_type] += row["item_count"]
+    return sorted(by_year.values(), key=lambda row: row["year"])
+
+
 @dataclass
 class StatsCache:
     _snapshot: Snapshot | None = field(default=None, init=False)
@@ -115,8 +128,8 @@ class StatsCache:
             cur.execute(queries.EVENTS_BY_HAZARD_TYPE)
             events_by_hazard_type = cur.fetchall()
 
-            cur.execute(queries.EVENTS_BY_YEAR)
-            events_by_year = cur.fetchall()
+            cur.execute(queries.ITEMS_BY_YEAR)
+            items_by_year = cur.fetchall()
 
         collections = _merge_collections(collection_ids, collection_rows)
         sources = _aggregate_sources(collections)
@@ -132,7 +145,7 @@ class StatsCache:
             total_response_items=totals["response"],
             sources=_with_iso_dates(sources),
             events_by_hazard_type=events_by_hazard_type,
-            events_by_year=events_by_year,
+            items_by_year=_aggregate_items_by_year(items_by_year),
             generated_at=datetime.now(UTC),
         )
         with self._lock:
