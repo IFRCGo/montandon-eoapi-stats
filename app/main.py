@@ -20,7 +20,15 @@ async def lifespan(app: FastAPI):
     scheduler.stop()
 
 
-app = FastAPI(title="montandon-eoapi-stats", lifespan=lifespan)
+# Docs live under /stats so the whole public surface sits behind one path prefix, which lets
+# the service share a hostname with another app rather than needing its own.
+app = FastAPI(
+    title="montandon-eoapi-stats",
+    lifespan=lifespan,
+    docs_url="/stats/docs",
+    redoc_url="/stats/redoc",
+    openapi_url="/stats/openapi.json",
+)
 
 
 def require_snapshot() -> Snapshot:

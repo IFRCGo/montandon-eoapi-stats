@@ -12,6 +12,8 @@ ingress:
   # Off by default; each environment opts in and supplies its own host.
   enabled: false
   host: ""
+  # Set to /stats to share a host with another service; traefik prefers the longer prefix.
+  path: /
   className: traefik
   tls:
     enabled: true
