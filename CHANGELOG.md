@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/IFRCGo/montandon-eoapi-stats/compare/v0.2.0...v0.2.1) (2026-09-22)
+
+
+### Bug Fixes
+
+* empty collections. ([#9](https://github.com/IFRCGo/montandon-eoapi-stats/issues/9)) ([5f99500](https://github.com/IFRCGo/montandon-eoapi-stats/commit/5f9950052ec78eeb19bc1fe85a835bd422f2150a))
+
 ## [0.2.0](https://github.com/IFRCGo/montandon-eoapi-stats/compare/v0.1.0...v0.2.0) (2026-09-22)
 
 
