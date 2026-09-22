@@ -17,6 +17,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project --no-dev
 
+COPY pyproject.toml /code/pyproject.toml
 COPY app /code/app
 
 RUN useradd --system --create-home appuser
