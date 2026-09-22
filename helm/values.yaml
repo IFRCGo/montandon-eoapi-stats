@@ -8,6 +8,18 @@ replicaCount: 1
 service:
   port: 8000
 
+ingress:
+  # Off by default; each environment opts in and supplies its own host.
+  enabled: false
+  host: ""
+  className: traefik
+  tls:
+    enabled: true
+    # The cluster holds a manually-managed DigiCert wildcard cert for *.ifrc.org in this
+    # secret, so any <name>.ifrc.org host is already covered — no per-host cert is issued.
+    # (cert-manager is installed but its letsencrypt-prod ClusterIssuer does not exist.)
+    secretName: montandon-eoapi-helm-secret-cert
+
 # Name of an existing Secret (in the same namespace) providing DB_HOST, DB_PORT,
 # DB_USER, DB_PASSWORD, DB_NAME as flat keys — e.g. the montandon-eoapi pgstac secret.
 existingDbSecret: pgstac-secrets-montandon-eoapi
