@@ -44,6 +44,18 @@ def _split_collection(collection: str) -> tuple[str, str]:
     return collection[: match.start()], match.group(1)
 
 
+def _merge_collections(collection_ids: list[str], stats_rows: list[dict]) -> list[dict]:
+    """Every registered collection, including empty ones, annotated with source and type."""
+    by_id = {row["collection"]: row for row in stats_rows}
+    for collection_id in collection_ids:
+        by_id.setdefault(collection_id, {"collection": collection_id, "item_count": 0, "earliest": None, "latest": None})
+    merged = []
+    for row in sorted(by_id.values(), key=lambda row: row["collection"]):
+        source, item_type = _split_collection(row["collection"])
+        merged.append({**row, "source": source, "type": item_type})
+    return merged
+
+
 def _aggregate_sources(collections: list[dict]) -> list[dict]:
     sources: dict[str, dict] = {}
     for row in collections:
@@ -93,8 +105,8 @@ class StatsCache:
             # settings.query_statement_timeout is validated against STATEMENT_TIMEOUT_RE at startup.
             cur.execute(f"SET statement_timeout = '{settings.query_statement_timeout}'")
 
-            cur.execute(queries.TOTAL_COLLECTIONS)
-            total_collections = cur.fetchone()["count"]
+            cur.execute(queries.ALL_COLLECTIONS)
+            collection_ids = [row["id"] for row in cur.fetchall()]
 
             cur.execute(queries.COLLECTION_STATS)
             collection_rows = cur.fetchall()
@@ -105,17 +117,14 @@ class StatsCache:
             cur.execute(queries.EVENTS_BY_YEAR)
             events_by_year = cur.fetchall()
 
-        collections = []
-        for row in collection_rows:
-            source, item_type = _split_collection(row["collection"])
-            collections.append({**row, "source": source, "type": item_type})
+        collections = _merge_collections(collection_ids, collection_rows)
         sources = _aggregate_sources(collections)
         totals = {
             item_type: sum(row["item_count"] for row in collections if row["type"] == item_type) for item_type in ITEM_TYPES
         }
 
         snapshot = Snapshot(
-            total_collections=total_collections,
+            total_collections=len(collections),
             total_events=totals["events"],
             total_hazard_items=totals["hazards"],
             total_impact_items=totals["impacts"],
@@ -129,7 +138,7 @@ class StatsCache:
             self._snapshot = snapshot
         logger.info(
             "Stats cache refreshed: %s collections, %s events, %s hazard items, %s impact items",
-            total_collections,
+            snapshot.total_collections,
             snapshot.total_events,
             snapshot.total_hazard_items,
             snapshot.total_impact_items,
