@@ -25,6 +25,7 @@ class Snapshot:
     total_response_items: int
     sources: list[dict]
     events_by_hazard_type: list[dict]
+    events_by_country: list[dict]
     items_by_year: list[dict]
     generated_at: datetime
 
@@ -128,6 +129,9 @@ class StatsCache:
             cur.execute(queries.EVENTS_BY_HAZARD_TYPE)
             events_by_hazard_type = cur.fetchall()
 
+            cur.execute(queries.EVENTS_BY_COUNTRY)
+            events_by_country = cur.fetchall()
+
             cur.execute(queries.ITEMS_BY_YEAR)
             items_by_year = cur.fetchall()
 
@@ -145,6 +149,7 @@ class StatsCache:
             total_response_items=totals["response"],
             sources=_with_iso_dates(sources),
             events_by_hazard_type=events_by_hazard_type,
+            events_by_country=events_by_country,
             items_by_year=_aggregate_items_by_year(items_by_year),
             generated_at=datetime.now(UTC),
         )

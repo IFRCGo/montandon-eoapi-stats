@@ -23,6 +23,15 @@ EVENTS_BY_HAZARD_TYPE = """
     ORDER BY 2 DESC
 """
 
+EVENTS_BY_COUNTRY = """
+    SELECT country_code, count(*) AS event_count
+    FROM pgstac.items,
+         jsonb_array_elements_text(content->'properties'->'monty:country_codes') AS country_code
+    WHERE collection LIKE '%-events'
+    GROUP BY 1
+    ORDER BY 2 DESC
+"""
+
 ITEMS_BY_YEAR = """
     SELECT collection, extract(year FROM datetime)::int AS year, count(*) AS item_count
     FROM pgstac.items
