@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/IFRCGo/montandon-eoapi-stats/compare/v0.2.2...v0.2.3) (2026-09-22)
+
+
+### Bug Fixes
+
+* ingress path. ([#13](https://github.com/IFRCGo/montandon-eoapi-stats/issues/13)) ([7d02877](https://github.com/IFRCGo/montandon-eoapi-stats/commit/7d0287714eb4c96163f0bc0a69ef23569cb3ef8d))
+
 ## [0.2.2](https://github.com/IFRCGo/montandon-eoapi-stats/compare/v0.2.1...v0.2.2) (2026-09-22)
 
 
