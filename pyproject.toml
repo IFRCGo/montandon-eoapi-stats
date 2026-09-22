@@ -1,6 +1,6 @@
 [project]
 name = "montandon-eoapi-stats"
-version = "0.2.5"
+version = "0.2.6"
 description = "Nightly-cached stats API over the Montandon eoAPI pgSTAC database"
 license = "MIT"
 requires-python = ">=3.13"
