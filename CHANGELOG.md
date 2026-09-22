@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4](https://github.com/IFRCGo/montandon-eoapi-stats/compare/v0.2.3...v0.2.4) (2026-09-22)
+
+
+### Bug Fixes
+
+* added responses count. ([#15](https://github.com/IFRCGo/montandon-eoapi-stats/issues/15)) ([2714dea](https://github.com/IFRCGo/montandon-eoapi-stats/commit/2714dea526cfb3204b98a86564f622e22b938ae2))
+
 ## [0.2.3](https://github.com/IFRCGo/montandon-eoapi-stats/compare/v0.2.2...v0.2.3) (2026-09-22)
 
 
