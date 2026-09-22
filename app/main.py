@@ -33,12 +33,12 @@ def require_snapshot() -> Snapshot:
 CachedSnapshot = Annotated[Snapshot, Depends(require_snapshot)]
 
 
-@app.get("/healthz")
+@app.get("/stats/healthz")
 def healthz():
     return {"status": "ok"}
 
 
-@app.get("/readyz")
+@app.get("/stats/readyz")
 def readyz(response: Response):
     if not cache.ready:
         response.status_code = 503
@@ -53,13 +53,9 @@ def stats(snapshot: CachedSnapshot):
         "total_events": snapshot.total_events,
         "total_hazard_items": snapshot.total_hazard_items,
         "total_impact_items": snapshot.total_impact_items,
+        "total_response_items": snapshot.total_response_items,
         "generated_at": snapshot.generated_at.isoformat(),
     }
-
-
-@app.get("/stats/collections")
-def collections(snapshot: CachedSnapshot):
-    return snapshot.collections
 
 
 @app.get("/stats/sources")
@@ -67,11 +63,11 @@ def sources(snapshot: CachedSnapshot):
     return snapshot.sources
 
 
-@app.get("/stats/events-by-hazard-type")
+@app.get("/stats/events/by-hazard-type")
 def events_by_hazard_type(snapshot: CachedSnapshot):
     return snapshot.events_by_hazard_type
 
 
-@app.get("/stats/events-by-year")
+@app.get("/stats/events/by-year")
 def events_by_year(snapshot: CachedSnapshot):
     return snapshot.events_by_year

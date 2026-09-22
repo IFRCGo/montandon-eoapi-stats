@@ -2,21 +2,20 @@
 
 Nightly-cached stats API over the [Montandon](https://github.com/IFRCGo) eoAPI pgSTAC database.
 
-A cron job (default: daily at 02:00) queries `pgstac` for collection, event, hazard and
-impact counts and caches the result in memory. All API requests are served from that
-cache, so the database is only ever hit once per refresh.
+A cron job (default: daily at 02:00) queries `pgstac` for collection, event, hazard,
+impact and response counts and caches the result in memory. All API requests are served
+from that cache, so the database is only ever hit once per refresh.
 
 ## Endpoints
 
 | Path | Description |
 | --- | --- |
-| `GET /healthz` | Liveness check |
-| `GET /readyz` | Readiness check (503 until the first cache refresh completes) |
-| `GET /stats` | Total collections, events, hazard items, impact items |
-| `GET /stats/collections` | Per-collection item counts and date ranges |
+| `GET /stats/healthz` | Liveness check |
+| `GET /stats/readyz` | Readiness check (503 until the first cache refresh completes) |
+| `GET /stats` | Total collections, events, hazard items, impact items, response items |
 | `GET /stats/sources` | Per-source item counts and date ranges, aggregated across collections |
-| `GET /stats/events-by-hazard-type` | Event counts grouped by hazard code |
-| `GET /stats/events-by-year` | Event counts grouped by year |
+| `GET /stats/events/by-hazard-type` | Event counts grouped by hazard code |
+| `GET /stats/events/by-year` | Event counts grouped by year |
 
 ## Configuration
 

@@ -13,16 +13,7 @@ def make_snapshot() -> Snapshot:
         total_events=5162915,
         total_hazard_items=5268015,
         total_impact_items=11052102,
-        collections=[
-            {
-                "collection": "usgs-events",
-                "source": "usgs",
-                "type": "events",
-                "item_count": 3940515,
-                "earliest": "1990-01-01T00:22:33.990000+00:00",
-                "latest": "2026-09-14T23:49:53.658000+00:00",
-            }
-        ],
+        total_response_items=2907,
         sources=[
             {
                 "source": "usgs",
@@ -42,18 +33,17 @@ def make_snapshot() -> Snapshot:
 
 def test_healthz_always_ok():
     with patch("app.cache.cache.refresh", lambda: None), TestClient(app) as client:
-        assert client.get("/healthz").status_code == 200
+        assert client.get("/stats/healthz").status_code == 200
 
 
 def test_stats_not_ready_before_first_refresh():
     with patch("app.cache.cache.refresh", lambda: None), TestClient(app) as client:
-        assert client.get("/readyz").status_code == 503
+        assert client.get("/stats/readyz").status_code == 503
         for path in (
             "/stats",
-            "/stats/collections",
             "/stats/sources",
-            "/stats/events-by-hazard-type",
-            "/stats/events-by-year",
+            "/stats/events/by-hazard-type",
+            "/stats/events/by-year",
         ):
             assert client.get(path).status_code == 503
 
@@ -64,25 +54,21 @@ def test_stats_served_from_cache_once_ready():
         patch("app.cache.cache._snapshot", make_snapshot()),
         TestClient(app) as client,
     ):
-        assert client.get("/readyz").status_code == 200
+        assert client.get("/stats/readyz").status_code == 200
 
         stats = client.get("/stats").json()
         assert stats["total_collections"] == 27
         assert stats["total_events"] == 5162915
         assert stats["total_hazard_items"] == 5268015
         assert stats["total_impact_items"] == 11052102
-
-        collections = client.get("/stats/collections").json()
-        assert collections[0]["collection"] == "usgs-events"
-        assert collections[0]["source"] == "usgs"
-        assert collections[0]["type"] == "events"
+        assert stats["total_response_items"] == 2907
 
         sources = client.get("/stats/sources").json()
         assert sources[0]["source"] == "usgs"
         assert sources[0]["earliest"] == "1990-01-01T00:22:33.990000+00:00"
 
-        assert client.get("/stats/events-by-hazard-type").json() == [{"hazard_code": "EQ", "event_count": 4051947}]
-        assert client.get("/stats/events-by-year").json() == [{"year": 2026, "event_count": 372935}]
+        assert client.get("/stats/events/by-hazard-type").json() == [{"hazard_code": "EQ", "event_count": 4051947}]
+        assert client.get("/stats/events/by-year").json() == [{"year": 2026, "event_count": 372935}]
 
 
 def test_split_collection_strips_only_known_suffixes():
@@ -90,6 +76,7 @@ def test_split_collection_strips_only_known_suffixes():
     assert _split_collection("idmc-gidd-events") == ("idmc-gidd", "events")
     assert _split_collection("pdc-impacts") == ("pdc", "impacts")
     assert _split_collection("ibtracs-hazards") == ("ibtracs", "hazards")
+    assert _split_collection("cems-response") == ("cems", "response")
     # A collection that doesn't follow the convention keeps its full id as the source.
     assert _split_collection("something-else") == ("something-else", "")
 
@@ -105,8 +92,19 @@ def test_merge_collections_includes_collections_with_no_items():
     empty = next(row for row in merged if row["collection"] == "empty-events")
     assert empty["item_count"] == 0
     assert empty["earliest"] is None
-    # A collection not following the naming convention keeps its items under an empty type.
-    assert next(row for row in merged if row["collection"] == "cems-response")["type"] == ""
+    # A -response collection is recognized as its own type, split off from its source.
+    response = next(row for row in merged if row["collection"] == "cems-response")
+    assert response["source"] == "cems"
+    assert response["type"] == "response"
+
+
+def test_merge_collections_keeps_unknown_suffixes_under_their_full_id():
+    merged = _merge_collections(["cems-something-else"], [])
+
+    # A collection not following the naming convention keeps its full id as the source.
+    unknown = next(row for row in merged if row["collection"] == "cems-something-else")
+    assert unknown["source"] == "cems-something-else"
+    assert unknown["type"] == ""
 
 
 def test_aggregate_sources_spans_all_collections_of_a_source():
@@ -137,3 +135,28 @@ def test_aggregate_sources_spans_all_collections_of_a_source():
     # Range spans every collection of the source, unfiltered.
     assert gdacs["earliest"] == datetime.fromisoformat("1900-01-01+00:00")
     assert gdacs["latest"] == datetime.fromisoformat("2026-09-26+00:00")
+
+
+def test_aggregate_sources_folds_response_collections_into_their_source():
+    def row(collection, source, item_type, count, earliest, latest):
+        return {
+            "collection": collection,
+            "source": source,
+            "type": item_type,
+            "item_count": count,
+            "earliest": datetime.fromisoformat(earliest),
+            "latest": datetime.fromisoformat(latest),
+        }
+
+    sources = _aggregate_sources(
+        [
+            row("cems-events", "cems", "events", 100, "2020-01-01+00:00", "2020-06-01+00:00"),
+            row("cems-response", "cems", "response", 2907, "2019-01-01+00:00", "2020-01-01+00:00"),
+        ]
+    )
+
+    assert len(sources) == 1
+    cems = sources[0]
+    assert cems["response"] == 2907
+    assert cems["events"] == 100
+    assert cems["total_items"] == 3007

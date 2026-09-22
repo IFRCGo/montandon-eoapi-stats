@@ -12,8 +12,8 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-ITEM_TYPES = ("events", "hazards", "impacts")
-COLLECTION_SUFFIX = re.compile(r"-(events|hazards|impacts)$")
+ITEM_TYPES = ("events", "hazards", "impacts", "response")
+COLLECTION_SUFFIX = re.compile(r"-(events|hazards|impacts|response)$")
 
 
 @dataclass
@@ -22,7 +22,7 @@ class Snapshot:
     total_events: int
     total_hazard_items: int
     total_impact_items: int
-    collections: list[dict]
+    total_response_items: int
     sources: list[dict]
     events_by_hazard_type: list[dict]
     events_by_year: list[dict]
@@ -66,6 +66,7 @@ def _aggregate_sources(collections: list[dict]) -> list[dict]:
                 "events": 0,
                 "hazards": 0,
                 "impacts": 0,
+                "response": 0,
                 "total_items": 0,
                 "earliest": None,
                 "latest": None,
@@ -128,7 +129,7 @@ class StatsCache:
             total_events=totals["events"],
             total_hazard_items=totals["hazards"],
             total_impact_items=totals["impacts"],
-            collections=_with_iso_dates(collections),
+            total_response_items=totals["response"],
             sources=_with_iso_dates(sources),
             events_by_hazard_type=events_by_hazard_type,
             events_by_year=events_by_year,
@@ -137,11 +138,12 @@ class StatsCache:
         with self._lock:
             self._snapshot = snapshot
         logger.info(
-            "Stats cache refreshed: %s collections, %s events, %s hazard items, %s impact items",
+            "Stats cache refreshed: %s collections, %s events, %s hazard items, %s impact items, %s response items",
             snapshot.total_collections,
             snapshot.total_events,
             snapshot.total_hazard_items,
             snapshot.total_impact_items,
+            snapshot.total_response_items,
         )
 
 
