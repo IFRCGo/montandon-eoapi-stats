@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from app.cache import Snapshot, _aggregate_sources, _split_collection
+from app.cache import Snapshot, _aggregate_sources, _merge_collections, _split_collection
 from app.main import app
 
 
@@ -92,6 +92,21 @@ def test_split_collection_strips_only_known_suffixes():
     assert _split_collection("ibtracs-hazards") == ("ibtracs", "hazards")
     # A collection that doesn't follow the convention keeps its full id as the source.
     assert _split_collection("something-else") == ("something-else", "")
+
+
+def test_merge_collections_includes_collections_with_no_items():
+    merged = _merge_collections(
+        ["usgs-events", "empty-events", "cems-response"],
+        [{"collection": "usgs-events", "item_count": 3940515, "earliest": None, "latest": None}],
+    )
+
+    # Every registered collection is represented, so len() matches total_collections.
+    assert [row["collection"] for row in merged] == ["cems-response", "empty-events", "usgs-events"]
+    empty = next(row for row in merged if row["collection"] == "empty-events")
+    assert empty["item_count"] == 0
+    assert empty["earliest"] is None
+    # A collection not following the naming convention keeps its items under an empty type.
+    assert next(row for row in merged if row["collection"] == "cems-response")["type"] == ""
 
 
 def test_aggregate_sources_spans_all_collections_of_a_source():

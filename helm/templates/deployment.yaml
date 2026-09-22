@@ -41,6 +41,8 @@ spec:
               port: http
             initialDelaySeconds: 5
             periodSeconds: 15
-            failureThreshold: 10
+            # The first refresh runs several full-table scans and took ~2m50s on staging,
+            # so allow 7.5min of headroom before the pod is reported NotReady.
+            failureThreshold: 30
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
