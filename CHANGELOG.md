@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.6](https://github.com/IFRCGo/montandon-eoapi-stats/compare/v0.2.5...v0.2.6) (2026-09-22)
+
+
+### Bug Fixes
+
+* added events by country code. ([#21](https://github.com/IFRCGo/montandon-eoapi-stats/issues/21)) ([568310f](https://github.com/IFRCGo/montandon-eoapi-stats/commit/568310f9592e2b69f06d5a4a3084d83ff7e16aec))
+* consolidated events and items per year. ([#19](https://github.com/IFRCGo/montandon-eoapi-stats/issues/19)) ([593de22](https://github.com/IFRCGo/montandon-eoapi-stats/commit/593de22ac1c434ec7f2bbadb3fd5b90f3ec4a07c))
+
 ## [0.2.5](https://github.com/IFRCGo/montandon-eoapi-stats/compare/v0.2.4...v0.2.5) (2026-09-22)
 
 
