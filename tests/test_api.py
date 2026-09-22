@@ -26,6 +26,7 @@ def make_snapshot() -> Snapshot:
             }
         ],
         events_by_hazard_type=[{"hazard_code": "EQ", "event_count": 4051947}],
+        events_by_country=[{"country_code": "USA", "event_count": 72578}],
         items_by_year=[{"year": 2026, "events": 372935, "hazards": 0, "impacts": 0, "response": 0}],
         generated_at=datetime.now(UTC),
     )
@@ -43,6 +44,7 @@ def test_stats_not_ready_before_first_refresh():
             "/stats",
             "/stats/sources",
             "/stats/events/by-hazard-type",
+            "/stats/events/by-country",
             "/stats/items/by-year",
         ):
             assert client.get(path).status_code == 503
@@ -68,6 +70,7 @@ def test_stats_served_from_cache_once_ready():
         assert sources[0]["earliest"] == "1990-01-01T00:22:33.990000+00:00"
 
         assert client.get("/stats/events/by-hazard-type").json() == [{"hazard_code": "EQ", "event_count": 4051947}]
+        assert client.get("/stats/events/by-country").json() == [{"country_code": "USA", "event_count": 72578}]
         assert client.get("/stats/items/by-year").json() == [
             {"year": 2026, "events": 372935, "hazards": 0, "impacts": 0, "response": 0}
         ]

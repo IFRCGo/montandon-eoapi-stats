@@ -85,6 +85,11 @@ def events_by_hazard_type(snapshot: CachedSnapshot):
     return snapshot.events_by_hazard_type
 
 
+@app.get("/stats/events/by-country")
+def events_by_country(snapshot: CachedSnapshot):
+    return snapshot.events_by_country
+
+
 @app.get("/stats/items/by-year")
 def items_by_year(snapshot: CachedSnapshot):
     return snapshot.items_by_year
