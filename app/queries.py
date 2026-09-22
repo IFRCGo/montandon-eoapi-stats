@@ -23,10 +23,9 @@ EVENTS_BY_HAZARD_TYPE = """
     ORDER BY 2 DESC
 """
 
-EVENTS_BY_YEAR = """
-    SELECT extract(year FROM datetime)::int AS year, count(*) AS event_count
+ITEMS_BY_YEAR = """
+    SELECT collection, extract(year FROM datetime)::int AS year, count(*) AS item_count
     FROM pgstac.items
-    WHERE collection LIKE '%-events'
-    GROUP BY 1
-    ORDER BY 1
+    GROUP BY 1, 2
+    ORDER BY 1, 2
 """
