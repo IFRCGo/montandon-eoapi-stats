@@ -1,6 +1,8 @@
 import logging
 import threading
+import tomllib
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Response
@@ -10,6 +12,12 @@ from app.cache import Snapshot, cache
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _get_version() -> str:
+    pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
+    with pyproject.open("rb") as f:
+        return tomllib.load(f)["project"]["version"]
 
 
 @asynccontextmanager
@@ -24,6 +32,7 @@ async def lifespan(app: FastAPI):
 # the service share a hostname with another app rather than needing its own.
 app = FastAPI(
     title="montandon-eoapi-stats",
+    version=_get_version(),
     lifespan=lifespan,
     docs_url="/stats/docs",
     redoc_url="/stats/redoc",

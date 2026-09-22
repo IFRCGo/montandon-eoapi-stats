@@ -3,6 +3,13 @@
     ".": {
       "release-type": "python",
       "version-file": "pyproject.toml",
+      "extra-files": [
+        {
+          "type": "toml",
+          "path": "uv.lock",
+          "jsonpath": "$.package[?(@.name.value=='montandon-eoapi-stats')].version"
+        }
+      ],
       "changelog-sections": [
         { "type": "feat", "section": "Features", "hidden": false },
         { "type": "fix", "section": "Bug Fixes", "hidden": false },
